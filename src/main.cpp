@@ -1,9 +1,10 @@
 #include <iostream>
 #include <vector>
-#include "include/list.h"
+#include "include/list.cpp"
 
 int main()
 {
+
     List l;
     l.printMenu();
     return 0;
