@@ -15,16 +15,19 @@ void List::printMenu()
     std::string command;
     std::cout<<"==============\n";
     std::cout<<" Task Tracker\n";
-    std::cout<<"==============\n\n\n\n";
+    std::cout<<"==============\n";
 
     while (true)
     {
-        std::cout<<"1 - Print the Task List.\n";
-        std::cout<<"2 - Add a task to the List.\n";
-        std::cout<<"3 - Delete a task from the List.\n";
-        std::cout<<"4 - Mark the task.\n";
 
-        std::cout<<"\nEnter a command:\n";
+        std::cout<<"\n\n\nPlease use words as a command.\n\n\n"; 
+        std::cout<<"1 - Print the Task List. (list)\n";
+        std::cout<<"2 - Add a task to the List. (add)\n";
+        std::cout<<"3 - Delete a task from the List. (delete)\n";
+        std::cout<<"4 - Mark the task. (update)\n";
+        std::cout<<"5 - Exit the programm. (exit)\n";
+     
+        std::cout<<"\nEnter a command: \n";
         std::getline(std::cin, command);
 
         if(command == "exit")
@@ -64,7 +67,39 @@ void List::printMenu()
 
 void List::printList()
 {
+    json task;
     ensureFileExists();
+
+    std::ifstream inFile(fileName);
+    if(inFile.is_open())
+    {
+        inFile >> task;
+        inFile.close();
+    }
+    else
+    {
+        std::cout<<"Error opening file for reading: " << fileName << std::endl;
+        return;
+    }
+
+    if(task.empty())
+    {
+        std::cout<<"No tasks available."<<std::endl;
+        return;
+    }
+
+    std::cout << "==========================\n";
+    std::cout << "       Task List\n";
+    std::cout << "==========================\n";
+    for(const auto& tasks: task)
+    {
+        std::cout << "ID:" << tasks["id"] << "\n";
+        std::cout << "Description: " << tasks["description"] << "\n";
+        std::cout << "Status " << tasks["status"] << "\n";
+        std::cout << "--------------------------\n";
+    }
+
+    
 }
 
 void List::addList()
