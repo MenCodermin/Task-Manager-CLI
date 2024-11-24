@@ -16,9 +16,11 @@ public:
     void addList();
     void deleteList();
     void printList();
-    void listDoneTask();
-    void listPendingTask();
-    void saveToFile(const nlohmann::json& tasks);
     void ensureFileExists();
+    void updateTaskStatus();
+    void printTasksByStatus();
+    void saveToFile(const nlohmann::json& tasks);
+    void waitForUser();
+    int getValidStatus();
 };
 
