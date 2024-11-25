@@ -1,15 +1,18 @@
 #include <iostream>
 #include <json.hpp>
+#include <set>
 
 class List
 {
 private:
-    unsigned int id = 0;
+    int id;
+    std::set<int> deletedIds;
     std::string directory = "E:/Projects/TaskManagerCLI/build";
     std::string fileName = directory + "/tasks.json";
+    nlohmann::json task;
 
 public:
-    List(){}
+    List() : id(0){}
     ~List(){}
     void printMenu();
     void updateList();

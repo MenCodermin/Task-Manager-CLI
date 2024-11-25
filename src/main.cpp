@@ -1,9 +1,8 @@
-#include <iostream>
 #include "list.cpp"
+#include <iostream>
 
-int main()
-{
-    List l;
-    l.printMenu();
-    return 0;
+int main() {
+  List l;
+  l.printMenu();
+  return 0;
 }

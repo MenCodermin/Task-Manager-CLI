@@ -1,10 +1,12 @@
-#include <iostream>
-#include <unordered_map>
-#include <string>
-#include <algorithm>
-#include <fstream>
-#include <filesystem>
 #include "include/list.h"
+
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+
 #include "include/json.hpp"
 
 using json = nlohmann::json;
@@ -12,14 +14,13 @@ using json = nlohmann::json;
 void List::printMenu()
 {
     int command;
-    std::cout<<"==============\n";
-    std::cout<<" Task Tracker\n";
-    std::cout<<"==============\n";
+    std::cout << "==============\n";
+    std::cout << " Task Tracker\n";
+    std::cout << "==============\n";
 
     while (true)
     {
-
-        std::cout << "\n\n\nPlease use words as a command.\n\n\n"; 
+        std::cout << "\n\n\nPlease use words as a command.\n\n\n";
         std::cout << "1 - Print the Task List.\n";
         std::cout << "2 - Add a task to the List.\n";
         std::cout << "3 - Delete a task from the List.\n";
@@ -27,12 +28,12 @@ void List::printMenu()
         std::cout << "5 - Update task status.\n";
         std::cout << "6 - Print list by status.\n";
         std::cout << "7 - Exit the programm.\n";
-     
+
         std::cout << "\nEnter a command: \n";
         std::cin >> command;
         std::cin.ignore();
-        
-        switch(command)
+
+        switch (command)
         {
             case 1:
                 printList();
@@ -46,7 +47,7 @@ void List::printMenu()
             case 4:
                 updateList();
                 break;
-            case 5: 
+            case 5:
                 updateTaskStatus();
                 break;
             case 6:
@@ -69,27 +70,27 @@ void List::printList()
     ensureFileExists();
 
     std::ifstream inFile(fileName);
-    if(inFile.is_open())
+    if (inFile.is_open())
     {
         inFile >> task;
         inFile.close();
     }
     else
     {
-        std::cout<<"Error opening file for reading: " << fileName << std::endl;
+        std::cout << "Error opening file for reading: " << fileName << std::endl;
         return;
     }
 
-    if(task.empty())
+    if (task.empty())
     {
-        std::cout<<"No tasks available."<<std::endl;
+        std::cout << "No tasks available." << std::endl;
         return;
     }
 
     std::cout << "==========================\n";
     std::cout << "       Task List\n";
     std::cout << "==========================\n";
-    for(const auto& tasks: task)
+    for (const auto &tasks : task)
     {
         std::cout << "ID:" << tasks["id"] << "\n";
         std::cout << "Description: " << tasks["description"] << "\n";
@@ -102,61 +103,70 @@ void List::printList()
 
 void List::addList()
 {
-    json tasks,task;
+    json tasks, task;
 
     std::string description;
-    unsigned int id;
-    
-    if (std::filesystem::exists(fileName)) 
-    { //Checking if file exists or not, if not, then create the one
+
+    if (std::filesystem::exists(fileName))
+    {  // Checking if file exists or not, if
+        // not, then create the one
         std::ifstream inFile(fileName);
-        if (inFile.is_open()) 
+        if (inFile.is_open())
         {
-            inFile >> tasks; // Parse JSON from file
+            inFile >> tasks;  // Parse JSON from file
             inFile.close();
-        } 
-        else 
-       {
+
+            for (const auto &task : tasks)
+            {
+                if (task.contains("id") && task["id"].is_number())
+                {
+                    id = std::max(id, static_cast<int>(task["id"]));
+                }
+            }
+        }
+        else
+        {
             std::cerr << "Error opening file for reading: " << fileName << std::endl;
             return;
         }
-    } 
-    else {tasks = json::array();} 
-    
-    id = tasks.size() + 1;
+    }
+    else
+        tasks = json::array();
 
-    //getchar();
-    std::cout<<"Enter the task description: ";
+    ++id;
+
+    std::cout << "Enter the task description: ";
     std::getline(std::cin, description);
 
-    task = {
-        {"id", id},
-        {"description", description},
-        {"status", "to-do"}
-    };
+    task = {{"id", id}, {"description", description}, {"status", "to-do"}};
 
     tasks.push_back(task);
 
-
     std::ofstream outFile(fileName);
-    if (outFile.is_open()) {
-        outFile << tasks.dump(4); 
+    if (outFile.is_open())
+    {
+        outFile << tasks.dump(4);
         outFile.close();
         std::cout << "Task added successfully!" << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "Error opening file for writing: " << fileName << std::endl;
     }
     waitForUser();
 }
 
-void List::saveToFile(const json& tasks)
+void List::saveToFile(const json &tasks)
 {
     std::ofstream outFile(fileName);
-    if (outFile.is_open()) {
-        outFile << tasks.dump(4); // Pretty print with 4 spaces
+    if (outFile.is_open())
+    {
+        outFile << tasks.dump(4);  // Pretty print with 4 spaces
         outFile.close();
         std::cout << "Tasks updated successfully in: " << fileName << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "Error opening file for writing: " << fileName << std::endl;
     }
 }
@@ -168,14 +178,15 @@ void List::deleteList()
     bool taskFound = false;
     char confirm;
 
-    if (std::filesystem::exists(fileName)) //Checking if file exists or not, if not, then create the one
+    if (std::filesystem::exists(fileName))  // Checking if file exists or not,
+                                            // if not, then create the one
     {
         std::ifstream inFile(fileName);
-        if (inFile.is_open()) 
+        if (inFile.is_open())
         {
-            inFile >> tasks; // Parse JSON from file
+            inFile >> tasks;  // Parse JSON from file
             inFile.close();
-        } 
+        }
         else
         {
             std::cerr << "Error opening file for reading: " << fileName << std::endl;
@@ -184,47 +195,47 @@ void List::deleteList()
     }
     else
     {
-        std::cout<<"File does not exist:"<< fileName<< std::endl;
+        std::cout << "File does not exist:" << fileName << std::endl;
         return;
     }
 
-    std::cout<<"Enter the id of the task to delete: ";
-    std::cin>> idToDelete;
+    std::cout << "Enter the id of the task to delete: ";
+    std::cin >> idToDelete;
     std::cin.ignore();
-    for(auto it = tasks.begin(); it != tasks.end(); it++)
+    for (auto it = tasks.begin(); it != tasks.end(); it++)
     {
-        if((*it)["id"] == idToDelete)
+        if ((*it)["id"] == idToDelete)
         {
-            std::cout<<"Are you sure you want to delete the task? (Y/N):"<<std::endl;
-            std::cin>> confirm;
+            std::cout << "Are you sure you want to delete the task? (Y/N):" << std::endl;
+            std::cin >> confirm;
             std::cin.ignore();
-            if(confirm == 'y' || confirm == 'Y')
+            if (confirm == 'y' || confirm == 'Y')
             {
                 tasks.erase(it);
                 taskFound = true;
                 break;
             }
-            else if( confirm == 'n' || confirm == 'N')
+            else if (confirm == 'n' || confirm == 'N')
             {
-                std::cout<<"Task removal canceled."<<std::endl;
+                std::cout << "Task removal canceled." << std::endl;
                 taskFound = false;
                 return;
             }
             else
             {
-                std::cout<<"Wrong command. Returning to the Main Menu."<<std::endl;
+                std::cout << "Wrong command. Returning to the Main Menu." << std::endl;
                 return;
             }
         }
     }
 
-    if( taskFound)
+    if (taskFound)
     {
-        std::cout<<" Task with ID: "<< idToDelete << " removed successfully."<< std::endl;
+        std::cout << " Task with ID: " << idToDelete << " removed successfully." << std::endl;
     }
     else
     {
-        std::cout<<" Task with ID: "<< idToDelete << " not found."<< std::endl;
+        std::cout << " Task with ID: " << idToDelete << " not found." << std::endl;
     }
 
     saveToFile(tasks);
@@ -235,27 +246,27 @@ void List::updateList()
 {
     json task;
     char choice;
-    int idToUpdate;
+    int  idToUpdate;
     std::string newDescription;
     bool taskFound;
 
     ensureFileExists();
 
     std::ifstream inFile(fileName);
-    if(inFile.is_open())
+    if (inFile.is_open())
     {
         inFile >> task;
-        inFile.close(); 
+        inFile.close();
     }
     else
     {
-        std::cout<<"Error reading file: " << fileName << std::endl;
+        std::cout << "Error reading file: " << fileName << std::endl;
         return;
     }
 
-    if(task.empty())
+    if (task.empty())
     {
-        std::cout<<"No task available."<< std::endl;
+        std::cout << "No task available." << std::endl;
         return;
     }
 
@@ -263,45 +274,45 @@ void List::updateList()
     std::cout << "Updating the task status. \n";
     std::cout << "==========================\n\n";
 
-    for(const auto& tasks: task)
+    for (const auto &tasks : task)
     {
         std::cout << "ID:" << tasks["id"] << "\n";
         std::cout << "Description: " << tasks["description"] << "\n";
         std::cout << "Status " << tasks["status"] << "\n";
         std::cout << "--------------------------\n";
     }
-    std::cout<<"Enter id of the task for update: "<<std::endl;
-    std::cin>> idToUpdate;
+    std::cout << "Enter id of the task for update: " << std::endl;
+    std::cin >> idToUpdate;
     std::cin.ignore();
-    for(auto& tasks : task)
+    for (auto &tasks : task)
     {
-        if(tasks["id"] == idToUpdate)
+        if (tasks["id"] == idToUpdate)
         {
-            std::cout<<"Enter the new description : ";
+            std::cout << "Enter the new description : ";
             std::getline(std::cin, newDescription);
-            if (newDescription.empty()) 
+            if (newDescription.empty())
             {
                 std::cerr << "Error: Description cannot be empty.\n";
                 return;
             }
             tasks["description"] = newDescription;
-            taskFound = true;
+            taskFound            = true;
             break;
         }
     }
 
-    if(taskFound)
+    if (taskFound)
     {
-        std::cout<<"Task was successfully updated." << std::endl;
+        std::cout << "Task was successfully updated." << std::endl;
     }
     else
     {
-        std::cout<<"Task with ID:" << idToUpdate << "not found." << std::endl;
+        std::cout << "Task with ID:" << idToUpdate << "not found." << std::endl;
         return;
     }
 
     std::ofstream outFile(fileName);
-    if(outFile.is_open())
+    if (outFile.is_open())
     {
         outFile << task.dump(4);
         outFile.close();
@@ -310,18 +321,23 @@ void List::updateList()
     {
         std::cout << "Error opening file for writing: " << fileName << std::endl;
     }
-    
+
     waitForUser();
 }
 
-void List::ensureFileExists() {
-    if (!std::filesystem::exists(fileName)) {
+void List::ensureFileExists()
+{
+    if (!std::filesystem::exists(fileName))
+    {
         std::ofstream outFile(fileName);
-        if (outFile.is_open()) {
-            outFile << json::array().dump(4); // Create an empty JSON array if file doesn't exist
+        if (outFile.is_open())
+        {
+            outFile << json::array().dump(4);  // Create an empty JSON array if file doesn't exist
             outFile.close();
             std::cout << "Created an empty task file: " << fileName << std::endl;
-        } else {
+        }
+        else
+        {
             std::cerr << "Error creating file: " << fileName << std::endl;
             std::exit(1);
         }
@@ -330,9 +346,9 @@ void List::ensureFileExists() {
 
 void List::updateTaskStatus()
 {
-    json task;
-    int idToUpdate, newStatus;
-    bool taskFound = false;
+    json                                 task;
+    int                                  idToUpdate, newStatus;
+    bool                                 taskFound = false;
     std::unordered_map<int, std::string> statusList;
 
     statusList[1] = "to-do";
@@ -342,39 +358,38 @@ void List::updateTaskStatus()
     ensureFileExists();
 
     std::ifstream inFile(fileName);
-    if(inFile.is_open())
+    if (inFile.is_open())
     {
         inFile >> task;
-        inFile.close(); 
+        inFile.close();
     }
+
     else
     {
         std::cout << "Error reading file: " << fileName << std::endl;
         return;
     }
 
-    if(task.empty())
+    if (task.empty())
     {
-        std::cout << "No task available."<< std::endl;
+        std::cout << "No task available." << std::endl;
         return;
     }
 
     printList();
 
-    std::cout << "Enter id of the task for update: "<<std::endl;
+    std::cout << "Enter id of the task for update: " << std::endl;
     std::cin >> idToUpdate;
     std::cin.ignore();
 
-    for(auto& tasks : task)
+    for (auto &tasks : task)
     {
-
-        if(tasks["id"] == idToUpdate)
+        if (tasks["id"] == idToUpdate)
         {
-
             taskFound = true;
 
             std::cout << "Choose the new status:\n";
-            for (const auto& [key, value] : statusList)
+            for (const auto &[key, value] : statusList)
             {
                 std::cout << key << ". " << value << "\n";
             }
@@ -383,7 +398,7 @@ void List::updateTaskStatus()
             std::cin >> newStatus;
             std::cin.ignore();
 
-            if(statusList.find(newStatus) != statusList.end())
+            if (statusList.find(newStatus) != statusList.end())
             {
                 tasks["status"] = statusList[newStatus];
                 std::cout << "Task was updated successfully\n";
@@ -398,15 +413,14 @@ void List::updateTaskStatus()
         }
     }
 
-    if(!taskFound)
+    if (!taskFound)
     {
         std::cout << "Task with ID:" << idToUpdate << "not found." << std::endl;
         return;
     }
 
-
     std::ofstream outFile(fileName);
-    if(outFile.is_open())
+    if (outFile.is_open())
     {
         outFile << task.dump(4);
         outFile.close();
@@ -418,8 +432,9 @@ void List::updateTaskStatus()
     waitForUser();
 }
 
-void List::printTasksByStatus() {
-    json task;
+void List::printTasksByStatus()
+{
+    json        task;
     std::string statusFilter;
 
     ensureFileExists();
@@ -427,16 +442,17 @@ void List::printTasksByStatus() {
     std::ifstream inFile(fileName);
     if (inFile.is_open())
     {
-        inFile >> task; 
+        inFile >> task;
         inFile.close();
-    } 
+    }
     else
     {
         std::cout << "Error reading file: " << fileName << std::endl;
         return;
     }
 
-    if (task.empty()) {
+    if (task.empty())
+    {
         std::cout << "No tasks available." << std::endl;
         return;
     }
@@ -451,8 +467,10 @@ void List::printTasksByStatus() {
 
     bool tasksFound = false;
 
-    for (const auto& tasks : task) {
-        if (tasks["status"] == statusFilter) {
+    for (const auto &tasks : task)
+    {
+        if (tasks["status"] == statusFilter)
+        {
             tasksFound = true;
             std::cout << "ID: " << tasks["id"] << "\n";
             std::cout << "Description: " << tasks["description"] << "\n";
@@ -461,7 +479,8 @@ void List::printTasksByStatus() {
         }
     }
 
-    if (!tasksFound) {
+    if (!tasksFound)
+    {
         std::cout << "No tasks found with status: " << statusFilter << "\n";
     }
     waitForUser();
@@ -470,24 +489,25 @@ void List::printTasksByStatus() {
 int List::getValidStatus()
 {
     int status = 0;
-    
-    while(true)
+
+    while (true)
     {
-        std::cout <<"Enter the new status: \n"
-                  <<"1. To-do\n"
-                  <<"2. In progress\n"
-                  <<"3. Done.\n";
+        std::cout << "Enter the new status: \n"
+                  << "1. To-do\n"
+                  << "2. In progress\n"
+                  << "3. Done.\n";
         std::cout << "Enter your choice (1, 2, or 3): ";
         std::cin >> status;
         std::cin.ignore();
 
-        if(std::cin.fail() || status < 1 || status > 2)
+        if (std::cin.fail() || status < 1 || status > 2)
         {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Invalid choice. Please enter a number between 1 and 3.\n";
         }
-        else break;
+        else
+            break;
     }
     return status;
 }
@@ -495,5 +515,5 @@ int List::getValidStatus()
 void List::waitForUser()
 {
     std::cout << "\nPress any key to return to the menu...";
-    std::cin.get(); 
+    std::cin.get();
 }
