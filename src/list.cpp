@@ -1,11 +1,13 @@
 #include "include/list.h"
 
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <map>
 #include <string>
-#include <unordered_map>
 
 #include "include/json.hpp"
 
@@ -138,7 +140,13 @@ void List::addList()
     std::cout << "Enter the task description: ";
     std::getline(std::cin, description);
 
-    task = {{"id", id}, {"description", description}, {"status", "to-do"}};
+    std::string timestamp = getCurrentTimestamp();
+
+    task = {{"id", id},
+            {"description", description},
+            {"status", "to-do"},
+            {"created_at", timestamp},
+            {"updated_at", timestamp}};
 
     tasks.push_back(task);
 
@@ -246,7 +254,7 @@ void List::updateList()
 {
     json task;
     char choice;
-    int  idToUpdate;
+    int idToUpdate;
     std::string newDescription;
     bool taskFound;
 
@@ -270,10 +278,6 @@ void List::updateList()
         return;
     }
 
-    std::cout << "\n==========================\n";
-    std::cout << "Updating the task status. \n";
-    std::cout << "==========================\n\n";
-
     for (const auto &tasks : task)
     {
         std::cout << "ID:" << tasks["id"] << "\n";
@@ -296,7 +300,8 @@ void List::updateList()
                 return;
             }
             tasks["description"] = newDescription;
-            taskFound            = true;
+            tasks["updated_at"] = getCurrentTimestamp();
+            taskFound = true;
             break;
         }
     }
@@ -346,14 +351,10 @@ void List::ensureFileExists()
 
 void List::updateTaskStatus()
 {
-    json                                 task;
-    int                                  idToUpdate, newStatus;
-    bool                                 taskFound = false;
-    std::unordered_map<int, std::string> statusList;
-
-    statusList[1] = "to-do";
-    statusList[2] = "in progress";
-    statusList[3] = "done";
+    json task;
+    int idToUpdate, newStatus;
+    bool taskFound = false;
+    std::map<int, std::string> statusList = {{1, "to-do"}, {2, "in progress"}, {3, "done"}};
 
     ensureFileExists();
 
@@ -376,7 +377,13 @@ void List::updateTaskStatus()
         return;
     }
 
-    printList();
+    for (const auto &tasks : task)
+    {
+        std::cout << "ID:" << tasks["id"] << "\n";
+        std::cout << "Description: " << tasks["description"] << "\n";
+        std::cout << "Status " << tasks["status"] << "\n";
+        std::cout << "--------------------------\n";
+    }
 
     std::cout << "Enter id of the task for update: " << std::endl;
     std::cin >> idToUpdate;
@@ -397,10 +404,10 @@ void List::updateTaskStatus()
             std::cout << "Enter your choice: ";
             std::cin >> newStatus;
             std::cin.ignore();
-
             if (statusList.find(newStatus) != statusList.end())
             {
                 tasks["status"] = statusList[newStatus];
+                tasks["updated_at"] = getCurrentTimestamp();
                 std::cout << "Task was updated successfully\n";
             }
             else
@@ -434,7 +441,7 @@ void List::updateTaskStatus()
 
 void List::printTasksByStatus()
 {
-    json        task;
+    json task;
     std::string statusFilter;
 
     ensureFileExists();
@@ -516,4 +523,14 @@ void List::waitForUser()
 {
     std::cout << "\nPress any key to return to the menu...";
     std::cin.get();
+}
+
+std::string List::getCurrentTimestamp()
+{
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::ostringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %H:%M:%S");
+    return ss.str();
 }

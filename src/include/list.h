@@ -10,6 +10,7 @@ private:
     std::string directory = "E:/Projects/TaskManagerCLI/build";
     std::string fileName = directory + "/tasks.json";
     nlohmann::json task;
+    std::string getCurrentTimestamp();
 
 public:
     List() : id(0){}
